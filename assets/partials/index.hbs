@@ -1,0 +1,9 @@
+{{#extend "layout"}}
+
+    {{#append "body"}}
+		{{#each ast.blocks}}
+			{{{partial type ext=../../ext}}}
+		{{/each}}
+    {{/append}}
+
+{{/extend}}
