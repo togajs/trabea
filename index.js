@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * # Stole
+ * # Trabea
  *
  * A theme engine for [Toga](http://togajs.github.io/) documentation.
  */
@@ -17,15 +17,15 @@ require('./assets/helpers')(handlebars);
 require('./assets/partials')(handlebars);
 
 /**
- * @class Stole
+ * @class Trabea
  * @extends Transform
  *
  * @constructor
  * @param {Object} options
  */
-function Stole(options) {
-	if (!(this instanceof Stole)) {
-		return new Stole(options);
+function Trabea(options) {
+	if (!(this instanceof Trabea)) {
+		return new Trabea(options);
 	}
 
 	/**
@@ -43,7 +43,7 @@ function Stole(options) {
 	Transform.call(this, { objectMode: true });
 }
 
-proto = inherits(Stole, Transform);
+proto = inherits(Trabea, Transform);
 
 /**
  * Default options.
@@ -100,4 +100,4 @@ proto._flush = function (cb) {
 	cb();
 };
 
-module.exports = Stole;
+module.exports = Trabea;
