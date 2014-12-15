@@ -1,19 +1,19 @@
 'use strict';
 
-var TogaCompilerPura = require('../index'),
+var Trabea = require('../index'),
 	es = require('event-stream'),
 	expect = require('expect.js'),
 	vs = require('vinyl-fs');
 
-describe('TogaPuraTailor', function () {
-	var compiler = TogaCompilerPura;
+describe('Trabea', function () {
+	var compiler = Trabea;
 
 	it('should create an instance', function () {
 		var a = compiler(),
-			b = new TogaCompilerPura();
+			b = new Trabea();
 
-		expect(a).to.be.a(TogaCompilerPura);
-		expect(b).to.be.a(TogaCompilerPura);
+		expect(a).to.be.a(Trabea);
+		expect(b).to.be.a(Trabea);
 
 		expect(a).not.to.be(b);
 	});

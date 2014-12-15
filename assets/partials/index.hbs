@@ -1,9 +1,9 @@
 {{#extend "layout"}}
 
-    {{#append "body"}}
+    {{#content "body" mode="append"}}
 		{{#each ast.blocks}}
 			{{{partial type ext=../../ext}}}
 		{{/each}}
-    {{/append}}
+    {{/content}}
 
 {{/extend}}
