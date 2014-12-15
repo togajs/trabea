@@ -10,7 +10,7 @@
 
 ## Test
 
-    $ npm test
+    $ gulp test
 
 ## Contribute
 
