@@ -72,7 +72,7 @@ proto._transform = function (file, enc, cb) {
 	}
 
 	// Create new path (this is gross)
-	file.path = file.base + file.path.replace(file.cwd, '').replace(/[\\\/]/g, '_') + '.html';
+	file.path = file.base + file.path.replace(file.cwd, '') + '.html';
 
 	// Create new contents
 	file.contents = new Buffer(handlebars.partials.index({
