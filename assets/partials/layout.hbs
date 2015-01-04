@@ -2,19 +2,57 @@
 <html lang="en-us">
 
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0" />
-
 	<title>{{title}}</title>
-
-	<link rel="stylesheet" href="prism.css" />
-	<link rel="stylesheet" href="screen.css" />
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<style>
+		:root {
+			--shade: ;
+		}
+		*, *:before, *:after {
+			box-sizing: border-box;
+		}
+		html {
+			font: normal 12px/1.2 sans-serif;
+		}
+		body {
+			margin: 0;
+		}
+		p {
+			margin: 0;
+		}
+		p + p {
+			margin-top: 0.628em;
+		}
+		th {
+			text-align: left;
+		}
+		.blocks {
+			border-top: 1px solid hsla(0, 0%, 0%, 0.1);
+			display: flex;
+			flex-wrap: wrap;
+		}
+		.blocks > * {
+			border-bottom: 1px solid hsla(0, 0%, 0%, 0.1);
+			flex: 0 0 50%;
+			padding: 2em;
+		}
+		.comment {
+			background: hsla(0, 100%, 100%, 1);
+		}
+		.code {
+			background: hsla(0, 0%, 0%, 0.1);
+			font-family: monospace;
+			overflow: auto;
+		}
+	</style>
 </head>
 
 <body>
 	<div class="site">
 		<div class="site-hd" role="banner">
 			{{#block "header"}}
+				{{!--
 				<div class="bar bar_inv">
 					<a class="isHiddenLg" href="#"><i class="icon icon_hamburger mix-icon_hideSm">Menu</i></a>
 					<div class="bar-flex isHiddenLg"></div>
@@ -29,12 +67,14 @@
 							<input type="text" name="query" placeholder="Search" />
 						</form>
 					</li>
-				</ul> <!-- /sitemap -->
+				</ul>
+				--}}
 			{{/block}}
 		</div>
 
 		<div class="site-bd">
 			{{#block "body"}}
+				{{!--
 				<div class="site-bd-top">
 					<div class="bar">
 						<div class="menu">
@@ -52,11 +92,13 @@
 						<a href="#" class="isActive"><i class="icon icon_code mix-icon_hideSm">Code</i></a>
 					</div>
 				</div>
+				--}}
 			{{/block}}
 		</div>
 
 		<div class="site-ft">
 			{{#block "footer"}}
+				{{!--
 				<div class="bar bar_inv">
 					<a href="#"><i class="icon icon_house mix-icon_hide">Home</i></a>
 					<a href="#"><i class="icon icon_github mix-icon_hide">Github</i></a>
@@ -70,11 +112,10 @@
 						</ul>
 					</div>
 				</div>
+				--}}
 			{{/block}}
 		</div> <!-- /site-ft -->
 	</div> <!-- /site -->
-
-	<script src="prism.js"></script>
 </body>
 
 </html>

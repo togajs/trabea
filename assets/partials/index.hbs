@@ -1,9 +1,13 @@
 {{#extend "layout"}}
 
     {{#content "body" mode="append"}}
-		{{#each ast.blocks}}
-			{{{partial type ext=../../ext}}}
-		{{/each}}
+		<div class="blocks">
+			<div class="comment">
+			</div>
+			{{#each ast.blocks}}
+				{{{partial type ext=../../ext}}}
+			{{/each}}
+		</div>
     {{/content}}
 
 {{/extend}}
