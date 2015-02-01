@@ -11,7 +11,6 @@ var proto,
 	Transform = require('stream').Transform,
 	handlebars = require('handlebars'),
 	inherits = require('mtil/function/inherits'),
-	lunr = require('lunr'),
 	map = require('map-stream'),
 	mixin = require('mtil/object/mixin'),
 	path = require('path'),
@@ -36,109 +35,80 @@ var proto,
  * @param {Object} options
  */
 function Trabea(options) {
-	// Support functional execution.
+	/**
+	 * Support functional execution.
+	 */
 	if (!(this instanceof Trabea)) {
 		return new Trabea(options);
 	}
 
 	/**
-	 * Theme options. Values are copied onto a new object so that the
+	 * Create options object. Values are copied onto a new object so that the
 	 * passed-in object isn't accidentally modified.
+	 */
+	options = mixin({}, defaults, options);
+
+	/**
+	 * Theme options.
 	 *
 	 * @property options
 	 * @type {Object}
 	 */
-	this.options = mixin({}, defaults, options);
+	this.options = options;
 
 	/**
 	 * A lookup object of nav nodes to make it easy to add leaves to the tree.
 	 *
-	 * @property navIndex
+	 * @property navNodes
 	 * @type {Object}
 	 */
-	this.navIndex = {};
+	this.navNodes = {};
 
 	/**
-	 * The `navNodes` is written to a JSON data file after all other files have
-	 * been consumed and generated.
+	 * The `navTree` is written to a JSON file after all other files have been
+	 * consumed and generated. This list may be consumed by a client-side script
+	 * to create dynamic navigation.
 	 *
-	 * @property navNodes
+	 * @property navTree
 	 * @type {Array}
 	 */
-	this.navNodes = [];
+	this.navTree = [];
 
 	/**
-	 * A Lunr instance for generating a search index to be used client-side.
+	 * The `searchIndex` is written to a JSON file after all other files have
+	 * been consumed and generated. This list may be consumed by a client-side
+	 * script to create a documentation search mechanism.
 	 *
 	 * @property searchIndex
-	 * @type {Lunr}
-	 */
-	this.searchIndex = null;
-
-	/**
-	 * The `searchNodes` is written to a JSON data file after all other files
-	 * have been consumed and generated.
-	 *
-	 * @property searchNodes
 	 * @type {Array}
 	 */
-	this.searchNodes = [];
+	this.searchIndex = [];
 
-	Transform.call(this, {
-		objectMode: true
-	});
-
-	this
-		.initHandlebars()
-		.initLunr();
-}
-
-proto = inherits(Trabea, Transform);
-
-/**
- * @method initHandlebars
- * @chainable
- */
-proto.initHandlebars = function () {
-	var options = this.options;
-
+	// Register Handlebars helpers and partials
 	registrar(handlebars, {
 		cwd: options.theme,
 		helpers: options.helpers,
 		partials: options.partials
 	});
 
-	return this;
-};
+	Transform.call(this, { objectMode: true });
+}
+
+proto = inherits(Trabea, Transform);
 
 /**
- * @method initLunr
- * @chainable
- */
-proto.initLunr = function () {
-	this.searchIndex = lunr(function () {
-		this.field('path');
-		this.field('title');
-		this.ref('id');
-	});
-
-	return this;
-};
-
-/**
- * Updates the `navNodes` with a new `navNode` based on the `nav` object in a
- * file's AST for use on the client-side.
+ * Updates the `navTree` with a new `navNode` based on the `nav` object in a
+ * file's AST. The `navTree` is written to a JSON file after all files have
+ * been consumed.
  *
  * @method addNavNode
- * @param {File} file
+ * @param {Object} astNode
  * @chainable
  */
-proto.addNavNode = function (file) {
+proto.addNavNode = function (astNode) {
 	var navNode,
-		ast = file && file.ast,
-		nav = ast && ast.nav,
-		name = nav && nav.name,
-		parent = nav && nav.parent;
+		name = astNode && astNode.name,
+		parent = astNode && astNode.parent;
 
 	// Nothing to do
 	if (name == null) {
@@ -149,11 +119,11 @@ proto.addNavNode = function (file) {
 	navNode = this.getNavNode(name);
 
 	// Copy AST properties to node
-	mixin(navNode, nav);
+	mixin(navNode, astNode);
 
 	if (!parent) {
-		// Add node to root of navNodes
-		this.navNodes
+		// Add node to root of navTree
+		this.navTree
 			.push(navNode);
 	}
 	else {
@@ -167,37 +137,18 @@ proto.addNavNode = function (file) {
 };
 
 /**
- * Gets or creates a `navNode` for use in the `navNodes` tree.
+ * Gets or creates a `navNode` for use in the `navTree`.
  *
  * @method getNavNode
  * @param {String} name
  * @return {Object}
  */
 proto.getNavNode = function (name) {
-	var navIndex = this.navIndex;
+	var navNodes = this.navNodes;
 
-	return navIndex[name] || (navIndex[name] = {
+	return navNodes[name] || (navNodes[name] = {
 		children: []
 	});
-};
-
-/**
- * Updates the `searchNodes` with a new `searchNode` and adds it to the search
- * index for use on the client-side.
- *
- * @method addSearchNode
- * @param {File} file
- * @chainable
- */
-proto.addSearchNode = function (file) {
-	var node = {
-		path: path.relative(file.base || '', file.path || '')
-	};
-
-	this.searchNodes.push(node);
-	this.searchIndex.add(node);
-
-	return this;
 };
 
 /**
@@ -211,7 +162,8 @@ proto.addSearchNode = function (file) {
  */
 proto._transform = function (file, enc, cb) {
 	var options = this.options,
-		ast = file && file.ast;
+		ast = file && file.ast,
+		nav = ast && ast.nav;
 
 	// Nothing to do
 	if (!ast) {
@@ -224,18 +176,24 @@ proto._transform = function (file, enc, cb) {
 	// Append desired extension
 	file.path += options.extension;
 
-	// Render AST as a page and update file contents.
+	// Render AST as a page and update file contents
 	file.contents = new Buffer(
-		handlebars.partials.file({
+		handlebars.partials.page({
 			options: options,
 			file: file
 		})
 	);
 
-	this
-		.addNavNode(file)
-		.addSearchNode(file)
-		.push(file);
+	// Add nav node
+	if (nav) {
+		nav.path = file.path.replace(file.base, './');
+		this.addNavNode(nav);
+	}
+
+	// TODO: Add search index entry
+
+	// Pass along
+	this.push(file);
 
 	// Done
 	cb();
@@ -254,15 +212,19 @@ proto._flush = function (cb) {
 		theme = options.theme,
 		push = this.push.bind(this);
 
-	// Render data.json
+	// Generate nav.json
 	this.push(new File({
-		path: 'data.json',
+		path: 'nav.json',
 		contents: new Buffer(
-			JSON.stringify({
-				nav: this.navNodes,
-				search: this.searchNodes,
-				index: this.searchIndex
-			})
+			JSON.stringify(this.navTree, null, 2)
+		)
+	}));
+
+	// Generate search.json
+	this.push(new File({
+		path: 'search.json',
+		contents: new Buffer(
+			JSON.stringify(this.searchIndex, null, 2)
 		)
 	}));
 

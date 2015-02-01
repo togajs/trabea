@@ -17,7 +17,8 @@ gulp.task('lint', function () {
 		.src([paths.gulp, paths.src, paths.test])
 		.pipe(jscs())
 		.pipe(jshint())
-		.pipe(jshint.reporter('jshint-stylish'));
+		.pipe(jshint.reporter('jshint-stylish'))
+		.on('error', console.error.bind(console));
 });
 
 gulp.task('cover', function () {
@@ -26,7 +27,8 @@ gulp.task('cover', function () {
 	return gulp
 		.src(paths.src)
 		.pipe(istanbul())
-		.pipe(istanbul.hookRequire());
+		.pipe(istanbul.hookRequire())
+		.on('error', console.error.bind(console));
 });
 
 gulp.task('test', ['lint', 'cover'], function () {
@@ -36,5 +38,10 @@ gulp.task('test', ['lint', 'cover'], function () {
 	return gulp
 		.src(paths.test)
 		.pipe(mocha({ reporter: 'spec' }))
-		.pipe(istanbul.writeReports());
+		.pipe(istanbul.writeReports())
+		.on('error', console.error.bind(console));
+});
+
+gulp.task('watch', function () {
+	gulp.watch(['./index.js', './test/*.js', './theme/**'], ['test']);
 });

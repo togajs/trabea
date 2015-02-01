@@ -1,0 +1,70 @@
+*, *:before, *:after {
+	box-sizing: border-box;
+	tab-size: 4;
+}
+
+html {
+	font: normal 12px/1.2 sans-serif;
+}
+
+body {
+	color: hsl(0, 0%, 25%);
+	margin: 0;
+}
+
+p {
+	margin: 0;
+}
+
+* + p {
+	margin-top: 0.628em;
+}
+
+table {
+	border-collapse: collapse;
+	table-layout: fixed;
+	width: 100%;
+}
+
+tr > * {
+	border: 1px solid hsl(0, 0%, 95%);
+	padding: 0.25em 0.5em;
+	text-align: left;
+	vertical-align: top;
+}
+
+.blocks {
+	border-top: 1px solid hsl(0, 0%, 90%);
+}
+
+.blocks > * {
+	border-bottom: 1px solid hsl(0, 0%, 90%);
+	padding: 2em;
+}
+
+.comment {
+	background: hsl(0, 100%, 100%);
+}
+
+.code {
+	background: hsl(0, 0%, 97%);
+	font-family: monospace;
+	overflow: auto;
+}
+
+@media (max-width: 799px) {
+	.blocks > *:empty {
+		display: none;
+	}
+}
+
+@media (min-width: 800px) {
+	.blocks {
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	.blocks > * {
+		flex: 0 0 50%;
+	}
+}
