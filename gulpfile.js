@@ -21,6 +21,14 @@ gulp.task('lint', function () {
 		.on('error', console.error.bind(console));
 });
 
+gulp.task('copy', function () {
+	// Trabea is its own fixture.
+	return gulp
+		.src(paths.src)
+		.pipe(gulp.dest('test/fixtures'))
+		.on('error', console.error.bind(console));
+});
+
 gulp.task('cover', function () {
 	var istanbul = require('gulp-istanbul');
 
@@ -31,7 +39,7 @@ gulp.task('cover', function () {
 		.on('error', console.error.bind(console));
 });
 
-gulp.task('test', ['lint', 'cover'], function () {
+gulp.task('test', ['lint', 'copy', 'cover'], function () {
 	var istanbul = require('gulp-istanbul'),
 		mocha = require('gulp-mocha');
 

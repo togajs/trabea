@@ -24,6 +24,7 @@
     "test": "gulp test"
   },
   "dependencies": {
+    "globby": "^1.1.0",
     "handlebars": "^2.0.0",
     "handlebars-layouts": "^1.1.0",
     "js-beautify": "^1.5.4",

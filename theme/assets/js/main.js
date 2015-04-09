@@ -1,3 +1,4 @@
+/*global hljs */
 (function() {
 	'use strict';
 
@@ -17,5 +18,7 @@
 	fetch('data.json', function (response) {
 		console.log(JSON.parse(response));
 	});
+
+	hljs.initHighlightingOnLoad();
 
 }());

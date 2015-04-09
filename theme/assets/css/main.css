@@ -1,23 +1,29 @@
 *, *:before, *:after {
 	box-sizing: border-box;
-	tab-size: 4;
+	margin: 0;
 }
 
-html {
-	font: normal 12px/1.2 sans-serif;
-}
-
-body {
+html, body {
+	background: hsl(0, 0%, 95%);
 	color: hsl(0, 0%, 25%);
-	margin: 0;
+	font: normal 13px/1.318 sans-serif;
 }
 
-p {
-	margin: 0;
+code {
+	font-family: monospace;
 }
 
-* + p {
+h1, h2, h3, h4, h5, h6 {
+	font-weight: normal;
+}
+
+* + p,
+* + pre {
 	margin-top: 0.628em;
+}
+
+pre {
+	tab-size: 4;
 }
 
 table {
@@ -27,44 +33,40 @@ table {
 }
 
 tr > * {
-	border: 1px solid hsl(0, 0%, 95%);
+	border: 1px solid hsl(0, 0%, 85%);
 	padding: 0.25em 0.5em;
 	text-align: left;
 	vertical-align: top;
 }
 
-.blocks {
-	border-top: 1px solid hsl(0, 0%, 90%);
-}
-
-.blocks > * {
-	border-bottom: 1px solid hsl(0, 0%, 90%);
+.blocks > *:not(:empty) {
 	padding: 2em;
 }
 
-.comment {
-	background: hsl(0, 100%, 100%);
-}
-
 .code {
-	background: hsl(0, 0%, 97%);
+	background: hsl(72, 7%, 13%);
+	color: hsl(0, 0%, 75%);
 	font-family: monospace;
 	overflow: auto;
 }
 
-@media (max-width: 799px) {
-	.blocks > *:empty {
-		display: none;
-	}
+.hljs {
+	background: transparent;
+	padding: 0;
 }
 
 @media (min-width: 800px) {
 	.blocks {
 		display: flex;
+		align-content: flex-start;
 		flex-wrap: wrap;
 	}
 
 	.blocks > * {
 		flex: 0 0 50%;
+	}
+
+	.blocks > *:first-child {
+		margin-left: 50%;
 	}
 }

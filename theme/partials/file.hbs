@@ -2,28 +2,30 @@
 <html lang="en-us">
 <head>
 
-	<title>{{file.ast.nav.title}} - {{options.title}}</title>
-
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
-
 	<base href="{{relative file.dirname file.base}}" />
+
+	<title>
+		{{~#if file.ast.nav.title}}{{file.ast.nav.title}} - {{/if~}}
+		{{~data.site.title~}}
+	</title>
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/monokai_sublime.min.css" />
 	<link rel="stylesheet" href="assets/css/main.css" />
 
 </head>
 <body>
 
 	<div class="blocks">
-		<div class="comment">
-			<h1>{{file.ast.nav.title}}</h1>
-			<p>./{{relative file.base file.path}}</p>
-		</div>
-
 		{{#each file.ast.blocks}}
 			{{{partial type ext=../../ext}}}
 		{{/each}}
 	</div>
 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/languages/css.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/languages/javascript.min.js"></script>
 	<script src="assets/js/main.js"></script>
 
 </body>

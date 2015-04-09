@@ -44,7 +44,6 @@ describe('trabea e2e', function () {
 			.src(config.src)
 			.pipe(css.parser())
 			.pipe(js.parser())
-			// TODO .pipe(md.parser())
 			.pipe(md.formatter())
 			.pipe(trabea())
 			.pipe(when(!config.debug, es.map(toEqualExpected)))
@@ -57,14 +56,14 @@ describe('trabea e2e', function () {
 	});
 
 	it('should not parse empty files', function (done) {
-		var files = [
+		var mockFiles = [
 			{ path: 'foo.js' },
 			{ path: 'foo.js', content: null },
 			undefined
 		];
 
 		es
-			.readArray(files)
+			.readArray(mockFiles)
 			.pipe(trabea())
 			.pipe(es.map(toEqualUndefined))
 			.on('error', done)
