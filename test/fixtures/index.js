@@ -12,7 +12,6 @@
 var proto,
 	File = require('vinyl'),
 	Transform = require('stream').Transform,
-	glob = require('globby'),
 	handlebars = require('handlebars'),
 	inherits = require('mtil/function/inherits'),
 	lunr = require('lunr'),
@@ -20,6 +19,7 @@ var proto,
 	mixin = require('mtil/object/mixin'),
 	path = require('path'),
 	registrar = require('handlebars-registrar'),
+	requireGlob = require('require-glob'),
 	vinylFs = require('vinyl-fs'),
 
 	// Default options
@@ -125,21 +125,11 @@ proto.initLunr = function () {
  * @chainable
  */
 proto.initTemplateData = function () {
-	var data = this.templateData,
-		options = this.options,
-		cwd = options.theme;
+	var options = this.options;
 
-	glob
-		.sync(options.data, { cwd: cwd })
-		.forEach(function (file) {
-			file = path.resolve(cwd, file);
-
-			// Clear cached module, if any
-			delete require.cache[require.resolve(file)];
-
-			// Add object properties to data object
-			return mixin(data, require(file));
-		});
+	this.templateData = requireGlob.sync(options.data, {
+		cwd: options.theme
+	});
 
 	return this;
 };
@@ -204,8 +194,6 @@ proto._transform = function (file, enc, cb) {
 
 	// Append desired extension
 	file.path += options.extension;
-
-	console.log(file.history);
 
 	// Render AST as a page and update file contents.
 	file.contents = new Buffer(
