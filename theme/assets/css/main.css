@@ -9,6 +9,10 @@ html, body {
 	font: normal 13px/1.318 sans-serif;
 }
 
+a {
+	color: hsl(190, 90%, 45%);
+}
+
 code {
 	font-family: monospace;
 }
@@ -33,10 +37,18 @@ table {
 }
 
 tr > * {
-	border: 1px solid hsl(0, 0%, 85%);
-	padding: 0.25em 0.5em;
+	border-bottom: 1px solid hsl(0, 0%, 85%);
+	padding: 0.25em 0;
 	text-align: left;
 	vertical-align: top;
+}
+
+tr > * + * {
+	padding-left: 0.5em;
+}
+
+tr:first-child > * {
+	color: hsl(338, 95%, 56%);
 }
 
 .blocks > *:not(:empty) {
