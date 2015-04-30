@@ -1,45 +1,53 @@
-'use strict';
+/*eslint-env mocha */
 
-var trabea = require('../index'),
-	expect = require('expect.js');
+import Trabea from '../index';
+import expect from 'expect';
 
 describe('Trabea', function () {
 	it('should create an instance', function () {
-		var Trabea = trabea,
-			a = new Trabea(),
-			b = trabea();
+		var a = new Trabea();
 
-		expect(a).to.be.a(Trabea);
-		expect(b).to.be.a(Trabea);
-
-		expect(a).not.to.be(b);
+		expect(a).toBeA(Trabea);
 	});
 
-	describe('prototype', function () {
-		describe('registerFile', function () {
-			it('should register a subset of data as a file node', function () {
-				var a = trabea();
+	describe('#initHandlebars', function () {
+		it('should register a subset of data as a file node', function () {
+		});
+	});
 
-				a.registerFile();
-				a.registerFile({});
-				a.registerFile({ base: 'foo', path: 'foo/Foo', ast: { nav: { title: 'Foo' } } });
-				a.registerFile({ base: 'foo', path: 'foo/Bar', ast: { nav: { title: 'Bar' } } });
-				a.registerFile({ base: 'foo', path: 'foo/Baz', ast: { nav: { title: 'Baz' } } });
-				a.registerFile({ base: 'foo', path: 'foo/Bat', ast: { nav: { title: 'Bat' } } });
-				a.registerFile({ base: 'foo', path: 'foo/Qux', ast: { nav: { title: 'Qux' } } });
-				a.registerFile({ base: 'foo', path: 'foo/Quux', ast: { nav: { title: 'Quux' } } });
-				a.registerFile({ base: 'foo', path: 'foo/Quuux', ast: { nav: { title: 'Quuux' } } });
+	describe('#initLunr', function () {
+		it('should register a subset of data as a file node', function () {
+		});
+	});
 
-				expect(a.fileNodes.length).to.be(8);
+	describe('#initTemplateData', function () {
+		it('should register a subset of data as a file node', function () {
+		});
+	});
 
-				a.fileNodes.forEach(function (node) {
-					expect(node).to.only.have.keys([
-						'name',
-						'parent',
-						'path',
-						'title'
-					]);
-				});
+	describe('#registerFile', function () {
+		it('should register a subset of data as a file node', function () {
+			var a = new Trabea();
+
+			a.registerFileData();
+			a.registerFileData({});
+			a.registerFileData({ base: 'foo', path: 'foo/Foo', ast: { nav: { title: 'Foo' } } });
+			a.registerFileData({ base: 'foo', path: 'foo/Bar', ast: { nav: { title: 'Bar' } } });
+			a.registerFileData({ base: 'foo', path: 'foo/Baz', ast: { nav: { title: 'Baz' } } });
+			a.registerFileData({ base: 'foo', path: 'foo/Bat', ast: { nav: { title: 'Bat' } } });
+			a.registerFileData({ base: 'foo', path: 'foo/Qux', ast: { nav: { title: 'Qux' } } });
+			a.registerFileData({ base: 'foo', path: 'foo/Quux', ast: { nav: { title: 'Quux' } } });
+			a.registerFileData({ base: 'foo', path: 'foo/Quuux', ast: { nav: { title: 'Quuux' } } });
+
+			expect(a.fileNodes.length).toBe(8);
+
+			a.fileNodes.forEach(function (node) {
+				expect(Object.keys(node)).toEqual([
+					'name',
+					'parent',
+					'path',
+					'title'
+				]);
 			});
 		});
 	});

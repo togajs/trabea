@@ -1,58 +1,46 @@
-'use strict';
+/*eslint-env mocha */
 
-var trabea = require('../index'),
-	es = require('event-stream'),
-	fs = require('fs'),
-	expect = require('expect.js'),
-	toga = require('toga'),
+import Trabea from '../index';
+import expect from 'expect';
+import streamArray from 'stream-array';
+import vinylFs from 'vinyl-fs';
+import { join } from 'path';
+// import { readFileSync } from 'fs';
 
-	config = {
-		src:  __dirname + '/fixtures/**/*.{css,js}',
-		dest: __dirname + '/actual',
-		debug: true
-	};
+var config = {
+	fixtures: join(__dirname, '/fixtures/**/*.{css,js}'),
+	expected: join(__dirname, '/expected'),
+	actual: join(__dirname, '/actual')
+};
 
 describe('trabea e2e', function () {
-	var count;
+	// function toEqualExpected(file) {
+	// 	var expected = file.path.replace('fixtures', 'expected');
+	//
+	// 	expect(String(file.contents)).toEqual(String(readFileSync(expected)));
+	// }
 
-	function toEqualExpected(file, cb) {
-		count++;
-
-		var expected = file.path.replace('fixtures', 'expected');
-		expect(file.contents.toString()).to.be(fs.readFileSync(expected, 'utf8'));
-		cb(null, file);
+	function toEqualUndefined(file) {
+		expect(file.ast).toBe(undefined);
 	}
-
-	function toEqualUndefined(file, cb) {
-		count++;
-
-		expect(file.ast).to.be(undefined);
-		cb(null, file);
-	}
-
-	beforeEach(function () {
-		count = 0;
-	});
 
 	it('should parse files with an ast', function (done) {
 		var css = require('toga-css'),
 			js = require('toga-js'),
-			md = require('toga-markdown'),
-			when = require('gulp-if');
+			markdown = require('toga-markdown'),
+			sample = require('toga-sample');
 
-		toga
-			.src(config.src)
+		vinylFs
+			.src(config.fixtures)
 			.pipe(css.parser())
 			.pipe(js.parser())
-			.pipe(md.formatter())
-			.pipe(trabea())
-			.pipe(when(!config.debug, es.map(toEqualExpected)))
-			.pipe(when(config.debug, toga.dest(config.dest)))
+			.pipe(markdown.formatter())
+			.pipe(sample.formatter())
+			.pipe(new Trabea())
+			.pipe(vinylFs.dest(config.actual))
+			// .on('data', toEqualExpected)
 			.on('error', done)
-			.on('end', function () {
-				expect(count).to.be(0);
-				done();
-			});
+			.on('end', done);
 	});
 
 	it('should not parse empty files', function (done) {
@@ -62,14 +50,10 @@ describe('trabea e2e', function () {
 			undefined
 		];
 
-		es
-			.readArray(mockFiles)
-			.pipe(trabea())
-			.pipe(es.map(toEqualUndefined))
+		streamArray(mockFiles)
+			.pipe(new Trabea())
+			.on('data', toEqualUndefined)
 			.on('error', done)
-			.on('end', function () {
-				// expect(count).to.be(0);
-				done();
-			});
+			.on('end', done);
 	});
 });

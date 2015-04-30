@@ -15,7 +15,7 @@
 		xhr.send();
 	}
 
-	fetch('data.json', function (response) {
+	fetch('.toga/data.json', function (response) {
 		console.log(JSON.parse(response));
 	});
 

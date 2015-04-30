@@ -15,21 +15,22 @@ var proto,
 	handlebars = require('handlebars'),
 	inherits = require('mtil/function/inherits'),
 	lunr = require('lunr'),
-	map = require('map-stream'),
 	mixin = require('mtil/object/mixin'),
 	path = require('path'),
 	registrar = require('handlebars-registrar'),
 	requireGlob = require('require-glob'),
+	through = require('through2'),
 	vinylFs = require('vinyl-fs'),
 
 	// Default options
 	defaults = {
-		theme: path.resolve(process.cwd(), 'theme'),
+		name: 'trabea',
+		theme: path.resolve(__dirname, 'theme'),
 		assets: './assets/**',
 		data: './data/**/*.js{,on}',
 		helpers: './helpers/**/*.js',
 		partials: './partials/**/*.hbs',
-		extension: '.html'
+		filename: 'index.html'
 	};
 
 /**
@@ -69,14 +70,11 @@ function Trabea(options) {
 	this.searchIndex = null;
 
 	/**
+	 * Object containing the contents of globbed data files.
+	 *
 	 * @property {Object} templateData
 	 */
-	this.templateData = {};
-
-	/**
-	 * @property {Number} uidCounter
-	 */
-	this.uidCounter = 0;
+	this.templateData = null;
 
 	Transform.call(this, {
 		objectMode: true
@@ -135,11 +133,11 @@ proto.initTemplateData = function () {
 };
 
 /**
- * @method registerFile
+ * @method registerFileData
  * @param {File} file
  * @chainable
  */
-proto.registerFile = function (file) {
+proto.registerFileData = function (file) {
 	if (!file) {
 		return this;
 	}
@@ -172,6 +170,58 @@ proto.registerFile = function (file) {
 };
 
 /**
+ * @method handleAsset
+ * @param {Vinyl} file
+ * @param {String} enc
+ * @param {Function(String,Vinyl)} cb
+ * @callback
+ */
+proto.handleAsset = function (file, enc, cb) {
+	var fromPlugin = file.fromPlugin || this.options.name;
+
+	console.log(fromPlugin);
+	console.log('file.base', file.base);
+	console.log('file.path', file.path);
+
+	file.path = path.join(file.base, '.' + fromPlugin, file.path.replace(file.base, ''));
+
+	console.log('file.path', file.path);
+
+	cb(null, file);
+};
+
+/**
+ * @method handleAsset
+ * @param {Vinyl} file
+ * @param {String} enc
+ * @param {Function(String,Vinyl)} cb
+ * @callback
+ */
+proto.handleSource = function (file, enc, cb) {
+	var options = this.options,
+		data = this.templateData;
+
+	// Append desired filename
+	file.originalPath = file.path;
+	file.path = path.join(file.path, options.filename);
+
+	// Render AST as a page and update file contents.
+	file.contents = new Buffer(
+		handlebars.partials.index({
+			data: data,
+			options: options,
+			file: file
+		})
+	);
+
+	// Register
+	this.registerFileData(file);
+
+	// Done
+	cb(null, file);
+};
+
+/**
  * Takes each file to be documented, processes it, renders the AST as html,
  * and sends it down the pipe to be written to disk.
  *
@@ -181,41 +231,24 @@ proto.registerFile = function (file) {
  * @param {Function} cb
  */
 proto._transform = function (file, enc, cb) {
-	var data = this.templateData,
-		options = this.options;
-
-	// Nothing to do
-	if (!file || !file.ast) {
+	if (!file) {
 		return cb();
 	}
 
-	// Expose parent directory for resolving relative paths
-	file.dirname = path.dirname(file.path);
+	if (file.isAsset) {
+		return this.handleAsset(file, enc, cb);
+	}
 
-	// Append desired extension
-	file.path += options.extension;
+	if (file.ast) {
+		return this.handleSource(file, enc, cb);
+	}
 
-	// Render AST as a page and update file contents.
-	file.contents = new Buffer(
-		handlebars.partials.file({
-			data: data,
-			options: options,
-			file: file
-		})
-	);
-
-	this
-		.registerFile(file)
-		.push(file);
-
-	// Done
 	cb();
 };
 
 /**
- * After all of the files have been processed, output the navtree and search
- * index as a JS data file, then pass along unmodified static assets to be
- * written to disk.
+ * After all of the files have been processed, output the file nodes and search
+ * index as a JSON file, then pass along unmodified static assets to be copied.
  *
  * @method _flush
  * @param {Function} cb
@@ -223,29 +256,25 @@ proto._transform = function (file, enc, cb) {
 proto._flush = function (cb) {
 	var options = this.options,
 		theme = options.theme,
+		name = options.name,
 		push = this.push.bind(this);
 
 	// Render data.json
 	push(new File({
-		path: 'data.json',
+		path: path.join('.' + name, 'data.json'),
 		contents: new Buffer(
 			JSON.stringify({
-				files: this.fileNodes,
-				index: this.searchIndex
-			})
+				fileNodes: this.fileNodes,
+				searchIndex: this.searchIndex
+			}, null, 2)
 		)
 	}));
 
 	// Copy static assets
 	vinylFs
-		.src(options.assets, {
-			cwd: theme,
-			base: theme
-		})
-		.pipe(map(function (file, cb) {
-			push(file);
-			cb();
-		}))
+		.src(options.assets, { cwd: theme, base: theme })
+		.pipe(through.obj(this.handleAsset.bind(this)))
+		.on('data', push)
 		.on('error', cb)
 		.on('end', cb);
 };
