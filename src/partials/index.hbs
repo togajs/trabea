@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en-us">
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+
+	<title>
+		{{~#if file.ast.nav.title}}{{file.ast.nav.title}} - {{/if~}}
+		{{~data.site.title~}}
+	</title>
+
+	<base href="{{relative file.originalPath file.base}}" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/monokai_sublime.min.css" />
+	<link rel="stylesheet" href=".{{options.name}}/assets/css/main.css" />
+
+</head>
+<body>
+
+	<div class="blocks">
+		{{#each file.ast.blocks}}
+{{> (lower type) }}
+		{{/each}}
+	</div>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/languages/css.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/languages/javascript.min.js"></script>
+	<script src=".{{options.name}}/assets/js/main.js"></script>
+
+</body>
+</html>

@@ -1,7 +1,8 @@
 /**
  * # Trabea
  *
- * A theme engine for [Toga](http://togajs.github.io/) documentation.
+ * A base compiler for [Toga](http://togajs.con) documentation. Takes
+ * abstract syntax trees and generates the final documenation output.
  *
  * @title Trabea
  * @name trabea
@@ -10,13 +11,12 @@
 import File from 'vinyl';
 import handlebars from 'handlebars';
 import lunr from 'lunr';
-import mixin from 'mtil/object/mixin';
-import path from 'path';
 import registrar from 'handlebars-registrar';
 import requireGlob from 'require-glob';
 import through from 'through2';
 import vinylFs from 'vinyl-fs';
 import { Transform } from 'stream';
+import { join, relative } from 'path';
 
 /**
  * @class Trabea
@@ -24,48 +24,72 @@ import { Transform } from 'stream';
  */
 export default class Trabea extends Transform {
 	/**
+	 * A list containing objects with a subset of file data to be used
+	 * client-side in generating navigation and search results.
+	 *
+	 * @property {Array} fileNodes
+	 */
+	fileNodes = [];
+
+	/**
+	 * @property {Object} options
+	 */
+	options = null;
+
+	/**
+	 * A Lunr instance for generating a search index to be used client-side.
+	 *
+	 * @property {Lunr} searchIndex
+	 */
+	searchIndex = null;
+
+	/**
+	 * Object containing the contents of globbed data files.
+	 *
+	 * @property {Object} templateData
+	 */
+	templateData = null;
+
+	/**
+	 * Default options.
+	 *
+	 * @property {Object} defaults
+	 * @static
+	 */
+	static defaults = {
+		/** The name of this plugin. */
+		name: 'trabea',
+
+		/** The file name to use for default pages. */
+		filename: 'index.html',
+
+		/** Path to directory containing theme files. */
+		theme: __dirname,
+
+		/** Path to directory containing public assets (relative to `theme`). */
+		assets: './assets/**',
+
+		/** Path to directory containing data files (relative to `theme`). */
+		data: './data/**/*.js{,on}',
+
+		/** Path to directory containing Handlebars helpers (relative to `theme`). */
+		helpers: './helpers/**/*.js',
+
+		/** Path to directory containing Handlebars partials (relative to `theme`). */
+		partials: './partials/**/*.hbs'
+	};
+
+	/**
 	 * @constructor
 	 * @param {Object} options
-	 * @param {String} options.assets
-	 * @param {String|Array.<String>|Object|Function} options.data
-	 * @param {String} options.filename
-	 * @param {String|Array.<String>|Object|Function} options.helpers
-	 * @param {String} options.name
-	 * @param {String|Array.<String>|Object|Function} options.partials
-	 * @param {String} options.theme
 	 */
-	constructor(options = {}) {
+	constructor(options) {
 		super({ objectMode: true });
 
-		/**
-		 * Theme options. Values are copied onto a new object so that the
-		 * passed-in object isn't accidentally modified.
-		 *
-		 * @property {Object} options
-		 */
-		this.options = mixin({}, Trabea.defaults, options);
-
-		/**
-		 * A list containing objects with a subset of file data to be used
-		 * client-side in generating navigation and search results.
-		 *
-		 * @property {Array} fileNodes
-		 */
-		this.fileNodes = [];
-
-		/**
-		 * A Lunr instance for generating a search index to be used client-side.
-		 *
-		 * @property {Lunr} searchIndex
-		 */
-		this.searchIndex = null;
-
-		/**
-		 * Object containing the contents of globbed data files.
-		 *
-		 * @property {Object} templateData
-		 */
-		this.templateData = null;
+		this.options = {
+			...Trabea.defaults,
+			...options
+		};
 
 		this
 			.initHandlebars()
@@ -78,12 +102,12 @@ export default class Trabea extends Transform {
 	 * @chainable
 	 */
 	initHandlebars() {
-		var options = this.options;
+		var { helpers, partials, theme } = this.options;
 
 		registrar(handlebars, {
-			cwd: options.theme,
-			helpers: options.helpers,
-			partials: options.partials
+			cwd: theme,
+			helpers: helpers,
+			partials: partials
 		});
 
 		return this;
@@ -108,10 +132,10 @@ export default class Trabea extends Transform {
 	 * @chainable
 	 */
 	initTemplateData() {
-		var options = this.options;
+		var { data, theme } = this.options;
 
-		this.templateData = requireGlob.sync(options.data, {
-			cwd: options.theme
+		this.templateData = requireGlob.sync(data, {
+			cwd: theme
 		});
 
 		return this;
@@ -127,13 +151,17 @@ export default class Trabea extends Transform {
 		var fromPlugin = file.fromPlugin || this.options.name;
 
 		file.isAsset = true;
-		file.path = path.join(file.base, '.' + fromPlugin, file.path.replace(file.base, ''));
+		file.path = join(
+			file.base,
+			'.' + fromPlugin,
+			file.path.replace(file.base, '')
+		);
 
 		cb(null, file);
 	}
 
 	/**
-	 * @method handleAsset
+	 * @method handleSource
 	 * @param {Vinyl} file
 	 * @param {String} enc
 	 * @param {Function(String,Vinyl)} cb
@@ -144,7 +172,7 @@ export default class Trabea extends Transform {
 
 		// Append desired filename
 		file.originalPath = file.path;
-		file.path = path.join(file.path, options.filename);
+		file.path = join(file.path, options.filename);
 
 		// Render AST as a page and update file contents.
 		file.contents = new Buffer(
@@ -172,10 +200,9 @@ export default class Trabea extends Transform {
 			return this;
 		}
 
-		var searchIndex = this.searchIndex,
-			fileNodes = this.fileNodes,
+		var { fileNodes, searchIndex } = this,
 			index = fileNodes.length,
-			filePath = path.relative(file.base || '', file.path || ''),
+			filePath = relative(file.base || '', file.path || ''),
 			ast = file.ast || {},
 			nav = ast.nav || {};
 
@@ -226,18 +253,15 @@ export default class Trabea extends Transform {
 	 * index as a JSON file, then pass along unmodified static assets to be copied.
 	 *
 	 * @method _flush
-	 * @param {Function} cb
+	 * @param {Function(?String)} done
 	 */
-	_flush(cb) {
-		var options = this.options,
-			theme = options.theme,
-			name = options.name,
+	_flush(done) {
+		var { assets, name, theme } = this.options,
 			push = this.push.bind(this);
 
-		// Render data.json
 		push(new File({
 			isAsset: true,
-			path: path.join('.' + name, 'data.json'),
+			path: join('.' + name, 'data.json'),
 			contents: new Buffer(
 				JSON.stringify({
 					fileNodes: this.fileNodes,
@@ -246,42 +270,15 @@ export default class Trabea extends Transform {
 			)
 		}));
 
-		// Copy static assets
+		if (!assets) {
+			return done();
+		}
+
 		vinylFs
-			.src(options.assets, { cwd: theme, base: theme })
+			.src(assets, { cwd: theme, base: theme })
 			.pipe(through.obj(this.handleAsset.bind(this)))
 			.on('data', push)
-			.on('error', cb)
-			.on('end', cb);
+			.on('error', done)
+			.on('end', done);
 	}
 }
-
-/**
- * Default options.
- *
- * @property defaults
- * @type {Object.<String,RegExp>}
- * @static
- */
-Trabea.defaults = {
-	/** The name of this plugin. */
-	name: 'trabea',
-
-	/** The file name to use for default pages. */
-	filename: 'index.html',
-
-	/** Path to directory containing theme files. */
-	theme: path.resolve(__dirname, 'theme'),
-
-	/** Path to directory containing public assets (relative to `theme`). */
-	assets: './assets/**',
-
-	/** Path to directory containing data files (relative to `theme`). */
-	data: './data/**/*.js{,on}',
-
-	/** Path to directory containing Handlebars helpers (relative to `theme`). */
-	helpers: './helpers/**/*.js',
-
-	/** Path to directory containing Handlebars partials (relative to `theme`). */
-	partials: './partials/**/*.hbs'
-};

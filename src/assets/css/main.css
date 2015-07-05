@@ -1,0 +1,84 @@
+*, *:before, *:after {
+	box-sizing: border-box;
+	margin: 0;
+}
+
+html, body {
+	background: hsl(0, 0%, 95%);
+	color: hsl(0, 0%, 25%);
+	font: normal 13px/1.318 sans-serif;
+}
+
+a {
+	color: hsl(190, 90%, 45%);
+}
+
+code {
+	font-family: monospace;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-weight: normal;
+}
+
+* + p,
+* + pre {
+	margin-top: 0.628em;
+}
+
+pre {
+	tab-size: 4;
+}
+
+table {
+	border-collapse: collapse;
+	table-layout: fixed;
+	width: 100%;
+}
+
+tr > * {
+	border-bottom: 1px solid hsl(0, 0%, 85%);
+	padding: 0.25em 0;
+	text-align: left;
+	vertical-align: top;
+}
+
+tr > * + * {
+	padding-left: 0.5em;
+}
+
+tr:first-child > * {
+	color: hsl(338, 95%, 56%);
+}
+
+.blocks > *:not(:empty) {
+	padding: 2em;
+}
+
+.code {
+	background: hsl(72, 7%, 13%);
+	color: hsl(0, 0%, 75%);
+	font-family: monospace;
+	overflow: auto;
+}
+
+.hljs {
+	background: transparent;
+	padding: 0;
+}
+
+@media (min-width: 800px) {
+	.blocks {
+		display: flex;
+		align-content: flex-start;
+		flex-wrap: wrap;
+	}
+
+	.blocks > * {
+		flex: 0 0 50%;
+	}
+
+	.blocks > *:first-child {
+		margin-left: 50%;
+	}
+}

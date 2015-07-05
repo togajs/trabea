@@ -1,44 +1,44 @@
 /*eslint-env mocha */
 
-import Trabea from '../index';
-import expect from 'expect';
-import streamArray from 'stream-array';
-import vinylFs from 'vinyl-fs';
-import { join } from 'path';
-// import { readFileSync } from 'fs';
+var Trabea = require('../src/trabea'),
+	Trifle = require('trifle'),
+	Tunic = require('tunic'),
+	expect = require('expect'),
+	// rimraf = require('rimraf'),
+	streamArray = require('stream-array'),
+	toga = require('toga'),
+	join = require('path').join,
+	// readFileSync = require('fs').readFileSync,
 
-var config = {
-	fixtures: join(__dirname, '/fixtures/**/*.{css,js}'),
-	expected: join(__dirname, '/expected'),
-	actual: join(__dirname, '/actual')
-};
+	config = {
+		fixtures: join(__dirname, '/fixtures/**/*.{css,js}'),
+		expected: join(__dirname, '/expected'),
+		actual: join(__dirname, '/actual')
+	};
 
 describe('trabea e2e', function () {
-	// function toEqualExpected(file) {
+	// function expectFile(file) {
 	// 	var expected = file.path.replace('fixtures', 'expected');
 	//
 	// 	expect(String(file.contents)).toEqual(String(readFileSync(expected)));
 	// }
 
-	function toEqualUndefined(file) {
+	function expectUndefined(file) {
 		expect(file.ast).toBe(undefined);
 	}
 
-	it('should parse files with an ast', function (done) {
-		var css = require('toga-css'),
-			js = require('toga-js'),
-			markdown = require('toga-markdown'),
-			sample = require('toga-sample');
+	// beforeEach(function (done) {
+	// 	rimraf(config.actual, done);
+	// });
 
-		vinylFs
+	it('should parse files with an ast', function (done) {
+		toga
 			.src(config.fixtures)
-			.pipe(css.parser())
-			.pipe(js.parser())
-			.pipe(markdown.formatter())
-			.pipe(sample.formatter())
+			.pipe(new Tunic())
+			.pipe(new Trifle())
 			.pipe(new Trabea())
-			.pipe(vinylFs.dest(config.actual))
-			// .on('data', toEqualExpected)
+			// .on('data', expectFile)
+			.pipe(toga.dest(config.actual))
 			.on('error', done)
 			.on('end', done);
 	});
@@ -52,7 +52,7 @@ describe('trabea e2e', function () {
 
 		streamArray(mockFiles)
 			.pipe(new Trabea())
-			.on('data', toEqualUndefined)
+			.on('data', expectUndefined)
 			.on('error', done)
 			.on('end', done);
 	});

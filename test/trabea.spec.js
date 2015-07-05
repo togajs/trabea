@@ -1,7 +1,7 @@
 /*eslint-env mocha */
 
-import Trabea from '../index';
-import expect from 'expect';
+var Trabea = require('../src/trabea'),
+	expect = require('expect');
 
 describe('Trabea', function () {
 	it('should create an instance', function () {

@@ -1,8 +1,7 @@
 {
-  "name": "@toga/trabea",
+  "name": "trabea",
   "version": "0.1.0",
-  "description": "A theme engine for Toga documentation.",
-  "public": true,
+  "description": "A base compiler for Toga documentation.",
   "keywords": [
     "toga",
     "trabea",
@@ -16,42 +15,45 @@
   "bugs": "https://github.com/togajs/trabea/issues",
   "license": "MIT",
   "author": "Shannon Moeller <me@shannonmoeller.com> (http://shannonmoeller.com)",
-  "main": "index.js",
+  "main": "dist/trabea.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/togajs/trabea"
   },
   "dependencies": {
-    "handlebars": "^3.0.2",
-    "handlebars-registrar": "^1.3.1",
-    "lunr": "^0.5.8",
+    "handlebars": "^3.0.3",
+    "handlebars-registrar": "^1.5.0",
+    "lunr": "^0.5.10",
     "mtil": "^0.1.3",
-    "require-glob": "^1.2.0",
-    "through2": "^0.6.5",
-    "vinyl": "^0.4.6",
+    "require-glob": "^1.3.1",
+    "through2": "^2.0.0",
+    "vinyl": "^0.5.0",
     "vinyl-fs": "^1.0.0"
   },
   "devDependencies": {
-    "babel": "^5.1.13",
+    "babel": "^5.6.14",
+    "babel-eslint": "^3.1.20",
+    "babel-istanbul": "^0.2.9",
     "coveralls": "^2.11.2",
-    "eslint": "^0.20.0",
+    "eslint": "^0.24.0",
     "expect": "^1.6.0",
-    "isparta": "^3.0.3",
-    "mocha": "^2.2.4",
+    "mocha": "^2.2.5",
     "nodemon": "^1.3.7",
+    "rimraf": "^2.4.1",
     "stream-array": "^1.1.0",
-    "toga": "^0.4.0",
-    "toga-css": "^0.1.3",
-    "toga-js": "^0.1.3",
-    "toga-markdown": "^0.1.2",
-    "toga-sample": "^0.1.0"
+    "toga": "^0.5.1",
+    "trifle": "^0.3.2",
+    "tunic": "^0.4.0"
   },
   "scripts": {
-    "build": "babel index.js --out-file dist/index.js",
-    "cover": "babel-node ./node_modules/.bin/isparta cover ./node_modules/.bin/_mocha",
+    "all": "npm run lint && npm run test && npm run build",
+    "build-helpers": "babel src/helpers --out-dir dist/helpers",
+    "build-static": "cp -R src/assets src/data src/partials dist/.",
+    "build-trabea": "babel src/trabea.js --out-file dist/trabea.js ",
+    "build": "npm run build-helpers && npm run build-static && npm run build-trabea",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "lint": "eslint index.js test/*.js",
-    "test": "npm run lint && npm run cover",
-    "watch": "nodemon --exec 'npm run test' --watch index.js --watch test"
+    "lint": "eslint src/*.js test/*.js",
+    "test": "babel-istanbul cover -i src/$npm_package_name.js ./node_modules/.bin/_mocha -- test/*.js",
+    "watch": "nodemon --exec 'npm run test' --watch src --watch test"
   }
 }
