@@ -1,7 +1,7 @@
 /**
  * # Trabea
  *
- * A base compiler for [Toga](http://togajs.con) documentation. Takes
+ * A base compiler for [Toga](http://togajs.com) documentation. Takes
  * abstract syntax trees and generates the final documenation output.
  *
  * @title Trabea
@@ -64,7 +64,7 @@ export default class Trabea extends Transform {
 		filename: 'index.html',
 
 		/** Path to directory containing theme files. */
-		theme: __dirname,
+		theme: join(__dirname, 'theme'),
 
 		/** Path to directory containing public assets (relative to `theme`). */
 		assets: './assets/**',
@@ -92,32 +92,16 @@ export default class Trabea extends Transform {
 		};
 
 		this
-			.initHandlebars()
-			.initLunr()
-			.initTemplateData();
+			.initSearchEngine()
+			.initTemplateData()
+			.initTemplateEngine();
 	}
 
 	/**
-	 * @method initHandlebars
+	 * @method initSearchEngine
 	 * @chainable
 	 */
-	initHandlebars() {
-		var { helpers, partials, theme } = this.options;
-
-		registrar(handlebars, {
-			cwd: theme,
-			helpers: helpers,
-			partials: partials
-		});
-
-		return this;
-	}
-
-	/**
-	 * @method initLunr
-	 * @chainable
-	 */
-	initLunr() {
+	initSearchEngine() {
 		this.searchIndex = lunr(function () {
 			this.field('title', { boost: 10 });
 			this.field('name', { boost: 2 });
@@ -136,6 +120,22 @@ export default class Trabea extends Transform {
 
 		this.templateData = requireGlob.sync(data, {
 			cwd: theme
+		});
+
+		return this;
+	}
+
+	/**
+	 * @method initTemplateEngine
+	 * @chainable
+	 */
+	initTemplateEngine() {
+		var { helpers, partials, theme } = this.options;
+
+		registrar(handlebars, {
+			cwd: theme,
+			helpers: helpers,
+			partials: partials
 		});
 
 		return this;

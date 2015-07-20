@@ -1,4 +1,4 @@
-/*eslint-env mocha */
+/* eslint-env mocha */
 
 var Trabea = require('../src/trabea'),
 	Trifle = require('trifle'),
